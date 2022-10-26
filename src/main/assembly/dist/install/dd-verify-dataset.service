@@ -1,0 +1,13 @@
+[Unit]
+Description=Dd Verify Dataset Service
+
+[Service]
+ExecStart=/opt/dans.knaw.nl/dd-verify-dataset/bin/dd-verify-dataset server /etc/opt/dans.knaw.nl/dd-verify-dataset/config.yml
+# Java returns 143 even if the SIGTERM was handled correctly.
+SuccessExitStatus=143
+
+User=dd-verify-dataset
+Group=dd-verify-dataset
+
+[Install]
+WantedBy=multi-user.target

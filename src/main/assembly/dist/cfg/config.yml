@@ -1,0 +1,51 @@
+#
+# dd-verify-dataset configuration file
+#
+server:
+  applicationContextPath: /
+  adminContextPath: /
+  applicationConnectors:
+    - type: http
+      port: 20345
+  adminConnectors:
+    - type: http
+      port: 20346
+
+dataverse:
+  baseUrl: 'http://localhost:8080'
+  apiKey: 'changeme'
+  unblockKey: 'changeme'
+  awaitLockStateMaxNumberOfRetries: 30
+  awaitLockStateMillisecondsBetweenRetries: 500
+
+verifyDataset:
+  rules:
+    - name: coordinatesWithinBounds
+      schemes:
+        - scheme: RD
+        # minX:
+        # maxX:
+        # minY:
+        # maxY:
+        - scheme: latlon
+        # minX:
+        # maxX:
+        # minY:
+        # maxY:
+
+    - name: identifiersCanBeResolved
+      resolvers:
+        ORCID: 'https://orcid.org/{id}'
+        ISNI: 'https://www.isni.org/isni/{id}'
+    - name: authorNameFormatOk
+      # regex ?
+#
+# See https://www.dropwizard.io/en/latest/manual/configuration.html#logging
+#
+logging:
+  level: INFO
+  appenders:
+    - type: file
+      archive: false
+      timeZone: system
+      currentLogFilename: /var/opt/dans.knaw.nl/log/dd-verify-dataset/dd-verify-dataset.log
