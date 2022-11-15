@@ -19,31 +19,32 @@ dataverse:
   awaitLockStateMillisecondsBetweenRetries: 500
 
 verifyDataset:
-  rules:
-    - name: coordinatesWithinBounds
-      schemes:
-        - scheme: RD
-        # minX:
-        # maxX:
-        # minY:
-        # maxY:
-        - scheme: latlon
-        # minX:
-        # maxX:
-        # minY:
-        # maxY:
+  identifierHasValidMod11:
+    - "ORCID"
+    - "ISNI"
+    - "VIAF"
+  coordinatesWithinBounds:
+    RD:
+      minX: -7000
+      maxX: 300000
+      minY: 289000
+      maxY: 629000
+    latlon:
+      minX: -180
+      maxX: 180
+      minY: -90
+      maxY: 90
+  authorNameFormatOk:
+    regexp: "[A-Z][a-z]+, ([A-Z][.])+( [a-z]+)?"
 
-    - name: identifiersCanBeResolved
-      resolvers:
-        ORCID: 'https://orcid.org/{id}'
-        ISNI: 'https://www.isni.org/isni/{id}'
-    - name: authorNameFormatOk
-      # regex ?
 #
 # See https://www.dropwizard.io/en/latest/manual/configuration.html#logging
 #
 logging:
   level: INFO
+  loggers:
+    "nl.knaw.dans.verifydataset":
+      level: INFO
   appenders:
     - type: file
       archive: false
