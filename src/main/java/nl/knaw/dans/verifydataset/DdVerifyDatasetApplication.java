@@ -22,7 +22,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.dans.lib.dataverse.DataverseClient;
 import nl.knaw.dans.verifydataset.health.DataverseHealthCheck;
-import nl.knaw.dans.verifydataset.resource.VerifyResource;
+import nl.knaw.dans.verifydataset.resources.VerifyResource;
 
 public class DdVerifyDatasetApplication extends Application<DdVerifyDatasetConfiguration> {
 
