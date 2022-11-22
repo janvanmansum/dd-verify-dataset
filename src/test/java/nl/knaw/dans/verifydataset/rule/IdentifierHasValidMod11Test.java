@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static nl.knaw.dans.verifydataset.DataSupport.loadDistConfig;
 import static nl.knaw.dans.verifydataset.DataSupport.readMdb;
@@ -34,8 +33,7 @@ public class IdentifierHasValidMod11Test {
         String[] config = loadDistConfig().getIdentifierHasValidMod11();
         MetadataBlock mb = readMdb("citation-mb.json");
         List<String> actual = new IdentifierHasValidMod11(config)
-            .verify(Collections.singletonMap("citation", mb))
-            .collect(Collectors.toList());
-        assertEquals(List.of(), actual);
+            .verify(Collections.singletonMap("citation", mb));
+        assertEquals(List.of("author[2] (9999-0000-0001-2281-955X) is not a valid ORCID"), actual);
     }
 }

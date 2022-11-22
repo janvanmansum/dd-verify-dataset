@@ -21,39 +21,44 @@ import nl.knaw.dans.lib.dataverse.model.dataset.PrimitiveSingleValueField;
 import nl.knaw.dans.lib.dataverse.model.dataset.SingleValueField;
 import nl.knaw.dans.verifydataset.core.config.VerifyDatasetConfig;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public abstract class MetadataRule {
     String blockName;
     String fieldName;
 
     protected static final PrimitiveSingleValueField defaultAttribute = new PrimitiveSingleValueField();
-    private static final AtomicReference<LinkedList<String>> stringLinkedList = new AtomicReference<>(new LinkedList<>());
+    private static final List<String> stringLinkedList = new LinkedList<>();
 
-    protected abstract String verifySingleField(Map<String, SingleValueField> attributes);
+    protected abstract String verifySingleField(Map<String, SingleValueField> attributes, int n);
 
-    public final Stream<String> verify(Map<String, MetadataBlock> mdBlocks) {
+    public final List<String> verify(Map<String, MetadataBlock> mdBlocks) {
+        int n = 0;
         if (!mdBlocks.containsKey(blockName))
-            return stringLinkedList.get().stream();
-        else
+            return stringLinkedList;
+        else {
+            AtomicInteger index = new AtomicInteger();
             return mdBlocks.get(blockName)
                 .getFields().stream()
                 .filter(f -> f.getTypeName().equals(fieldName))
                 .filter(f -> f instanceof CompoundField)
                 .flatMap(f -> (((CompoundField) f).getValue()).stream())
-                .map(this::verifySingleField)
-                .filter(s -> !s.isEmpty());
+                .map(f -> verifySingleField(f, index.incrementAndGet()))
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        }
     }
 
-    public static List<MetadataRule> configureRules(VerifyDatasetConfig config) {
-        LinkedList<MetadataRule> rules = new LinkedList<>();
-        rules.add(new CoordinatesWithinBounds(config.getCoordinatesWithinBounds()));
-        rules.add(new IdentifierHasValidMod11(config.getIdentifierHasValidMod11()));
-        rules.add(new AuthorNameFormatOk(config.getAuthorNameFormatOk()));
+    public static Map<String, MetadataRule> configureRules(VerifyDatasetConfig config) {
+        HashMap<String, MetadataRule> rules = new HashMap<>();
+        rules.put("coordinatesWithinBounds", new CoordinatesWithinBounds(config.getCoordinatesWithinBounds()));
+        rules.put("identifierHasValidMod11", new IdentifierHasValidMod11(config.getIdentifierHasValidMod11()));
+        rules.put("authorNameFormatOk", new AuthorNameFormatOk(config.getAuthorNameFormatOk()));
         return rules;
     }
 }

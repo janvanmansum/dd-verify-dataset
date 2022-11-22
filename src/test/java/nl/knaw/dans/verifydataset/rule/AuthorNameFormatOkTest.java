@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static nl.knaw.dans.verifydataset.DataSupport.loadDistConfig;
 import static nl.knaw.dans.verifydataset.DataSupport.readMdb;
@@ -36,8 +35,10 @@ public class AuthorNameFormatOkTest {
         var config = loadDistConfig().getAuthorNameFormatOk();
         MetadataBlock mb = readMdb("citation-mb.json");
         List<String> actual = new AuthorNameFormatOk(config)
-            .verify(Collections.singletonMap("citation", mb))
-            .collect(Collectors.toList());
-        assertEquals(List.of("author name 'Barbapappa' does not match [A-Z][a-z]+, ([A-Z][.])+( [a-z]+)?"), actual);
+            .verify(Collections.singletonMap("citation", mb));
+        assertEquals(List.of(
+            "author[1] ('Barbapappa') does not match [A-Z][a-z]+, ([A-Z][.])+( [a-z]+)?",
+            "author[2] ('Barbapappa') does not match [A-Z][a-z]+, ([A-Z][.])+( [a-z]+)?"
+        ), actual);
     }
 }

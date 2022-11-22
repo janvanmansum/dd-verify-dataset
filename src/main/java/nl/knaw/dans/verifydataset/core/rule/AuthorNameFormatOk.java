@@ -30,11 +30,11 @@ public class AuthorNameFormatOk extends MetadataRule {
     }
 
     @Override
-    protected String verifySingleField(Map<String, SingleValueField> attributes) {
+    protected String verifySingleField(Map<String, SingleValueField> attributes, int fieldNr) {
         String name = attributes.getOrDefault("authorName", defaultAttribute).getValue();
         if (name == null || name.matches(regexp))
             return "";
         else
-            return String.format("author name '%s' does not match %s", name, regexp);
+            return String.format("%s[%d] ('%s') does not match %s", fieldName, fieldNr, name, regexp);
     }
 }
