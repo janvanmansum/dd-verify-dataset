@@ -27,7 +27,7 @@
 
     <groupId>nl.knaw.dans</groupId>
     <artifactId>dd-verify-dataset</artifactId>
-    <version>0.2.3-SNAPSHOT</version>
+    <version>0.3.0</version>
 
     <name>DD Verify Dataset</name>
     <url>https://github.com/DANS-KNAW/dd-verify-dataset</url>
@@ -40,7 +40,7 @@
 
     <scm>
         <developerConnection>scm:git:https://github.com/DANS-KNAW/dd-verify-dataset</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v0.3.0</tag>
     </scm>
 
     <dependencies>
