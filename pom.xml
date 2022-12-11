@@ -39,7 +39,7 @@
     </properties>
 
     <scm>
-        <developerConnection>scm:git:https://github.com/DANS-KNAW/dd-verify-dataset</developerConnection>
+        <developerConnection>scm:git:ssh://github.com/DANS-KNAW/dd-verify-dataset</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
