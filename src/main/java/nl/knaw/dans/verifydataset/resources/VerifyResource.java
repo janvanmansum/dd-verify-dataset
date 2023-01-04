@@ -18,7 +18,9 @@ package nl.knaw.dans.verifydataset.resources;
 import nl.knaw.dans.lib.dataverse.DataverseClient;
 import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.verifydataset.api.VerifyRequest;
-import nl.knaw.dans.verifydataset.api.VerifyResponse;
+import nl.knaw.dans.verifydataset.api.RuleResponse;
+import nl.knaw.dans.verifydataset.core.CmdiChecker;
+import nl.knaw.dans.verifydataset.core.DataverseClientWrapper;
 import nl.knaw.dans.verifydataset.core.config.VerifyDatasetConfig;
 import nl.knaw.dans.verifydataset.core.rule.MetadataRule;
 import org.apache.commons.lang3.StringUtils;
@@ -43,11 +45,33 @@ import java.util.Map;
 public class VerifyResource {
     private static final Logger log = LoggerFactory.getLogger(VerifyResource.class);
     private final DataverseClient dataverse;
+    private final CmdiChecker cmdiChecker;
     private final Map<String, MetadataRule> rules;
 
     public VerifyResource(DataverseClient dataverse, VerifyDatasetConfig config) {
         this.dataverse = dataverse;
+        cmdiChecker = new CmdiChecker(new DataverseClientWrapper(dataverse));
         rules = MetadataRule.configureRules(config);
+    }
+
+    @POST
+    @Path("/verify/check-cmdi")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
+    public Response verifyCMDI(VerifyRequest req) {
+        if (StringUtils.isBlank(req.getDatasetPid()))
+            return missingPidResponse();
+        try {
+            log.info("Looking for CMDI file(s) " + req);
+            var files = cmdiChecker.find(req.getDatasetPid());
+            return Response.ok(files).build();
+        }
+        catch (DataverseException e) {
+            return responseFromDataverseException(e);
+        }
+        catch (Exception e) {
+            throw new InternalServerErrorException(e);
+        }
     }
 
     @POST
@@ -56,10 +80,7 @@ public class VerifyResource {
     @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
     public Response verify(VerifyRequest req) {
         if (StringUtils.isBlank(req.getDatasetPid()))
-            return Response
-                .status(Response.Status.BAD_REQUEST)
-                .entity("Field 'datasetPid' is mandatory")
-                .build();
+            return missingPidResponse();
         try {
             log.info("Verifying " + req);
             var blocks = dataverse
@@ -68,16 +89,27 @@ public class VerifyResource {
             HashMap<String, List<String>> messages = new HashMap<>();
             rules.forEach((name, rule) -> messages.put(name, rule.verify(blocks)));
             // ok->accepted when we change to asynchronous
-            return Response.ok(new VerifyResponse(messages)).build();
+            return Response.ok(new RuleResponse(messages)).build();
         }
         catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
         catch (DataverseException e) {
-            if (e.getStatus() == 404)
-                throw new NotFoundException();
-            else
-                throw new InternalServerErrorException(e);
+            return responseFromDataverseException(e);
         }
+    }
+
+    private Response responseFromDataverseException(DataverseException e) {
+        if (e.getStatus() == 404)
+            throw new NotFoundException();
+        else
+            throw new InternalServerErrorException(e);
+    }
+
+    private Response missingPidResponse() {
+        return Response
+            .status(Response.Status.BAD_REQUEST)
+            .entity("Field 'datasetPid' is mandatory")
+            .build();
     }
 }
