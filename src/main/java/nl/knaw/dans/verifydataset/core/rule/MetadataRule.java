@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.verifydataset.core.rule;
 
-import nl.knaw.dans.lib.dataverse.model.dataset.CompoundField;
+import nl.knaw.dans.lib.dataverse.model.dataset.CompoundMultiValueField;
 import nl.knaw.dans.lib.dataverse.model.dataset.MetadataBlock;
 import nl.knaw.dans.lib.dataverse.model.dataset.PrimitiveSingleValueField;
 import nl.knaw.dans.lib.dataverse.model.dataset.SingleValueField;
@@ -38,7 +38,6 @@ public abstract class MetadataRule {
     protected abstract String verifySingleField(Map<String, SingleValueField> attributes, int n);
 
     public final List<String> verify(Map<String, MetadataBlock> mdBlocks) {
-        int n = 0;
         if (!mdBlocks.containsKey(blockName))
             return stringLinkedList;
         else {
@@ -46,8 +45,8 @@ public abstract class MetadataRule {
             return mdBlocks.get(blockName)
                 .getFields().stream()
                 .filter(f -> f.getTypeName().equals(fieldName))
-                .filter(f -> f instanceof CompoundField)
-                .flatMap(f -> (((CompoundField) f).getValue()).stream())
+                .filter(f -> f instanceof CompoundMultiValueField)
+                .flatMap(f -> (((CompoundMultiValueField) f).getValue()).stream())
                 .map(f -> verifySingleField(f, index.incrementAndGet()))
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
