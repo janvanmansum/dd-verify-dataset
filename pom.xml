@@ -26,7 +26,7 @@
     </parent>
 
     <artifactId>dd-verify-dataset</artifactId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.9.0</version>
 
     <name>DD Verify Dataset</name>
     <url>https://github.com/DANS-KNAW/dd-verify-dataset</url>
@@ -39,7 +39,7 @@
 
     <scm>
         <developerConnection>scm:git:ssh://github.com/DANS-KNAW/dd-verify-dataset</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v0.9.0</tag>
     </scm>
 
     <dependencies>
