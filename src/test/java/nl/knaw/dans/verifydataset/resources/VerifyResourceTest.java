@@ -22,7 +22,7 @@ import nl.knaw.dans.lib.dataverse.BasicFileAccessApi;
 import nl.knaw.dans.lib.dataverse.DatasetApi;
 import nl.knaw.dans.lib.dataverse.DataverseClient;
 import nl.knaw.dans.lib.dataverse.DataverseException;
-import nl.knaw.dans.lib.dataverse.DataverseResponse;
+import nl.knaw.dans.lib.dataverse.DataverseHttpResponse;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetVersion;
 import nl.knaw.dans.lib.dataverse.model.dataset.MetadataBlock;
@@ -30,6 +30,8 @@ import nl.knaw.dans.lib.dataverse.model.file.DataFile;
 import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
 import nl.knaw.dans.verifydataset.api.RuleResponse;
 import nl.knaw.dans.verifydataset.api.VerifyRequest;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class VerifyResourceTest {
 
-    private DataverseClient dataverse = Mockito.mock(DataverseClient.class);
+    private final DataverseClient dataverse = Mockito.mock(DataverseClient.class);
     private final ResourceExtension EXT = ResourceExtension.builder()
         .addResource(new VerifyResource(dataverse, loadDistConfig()))
         .build();
@@ -66,8 +68,7 @@ public class VerifyResourceTest {
         var datasetApi = new DatasetApi(null, "", false) {
 
             @Override
-            public DataverseResponse<DatasetLatestVersion> getLatestVersion() {
-                HashMap<String, MetadataBlock> map = new HashMap<>();
+            public DataverseHttpResponse<DatasetLatestVersion> getLatestVersion() throws IOException {
                 var df = new DataFile();
                 df.setId(999);
                 df.setContentType("application/xml");
@@ -79,13 +80,7 @@ public class VerifyResourceTest {
                 var lv = new DatasetLatestVersion();
                 lv.setLatestVersion(dv);
 
-                return new DataverseResponse<>("", new ObjectMapper(), DatasetVersion.class) {
-
-                    @Override
-                    public DatasetLatestVersion getData() {
-                        return lv;
-                    }
-                };
+                return mockDataverseHttpResponse(lv);
             }
         };
         // Mockito does not like the generic method
@@ -164,17 +159,23 @@ public class VerifyResourceTest {
         var datasetApi = new DatasetApi(null, "", false) {
 
             @Override
-            public DataverseResponse<DatasetVersion> getVersion() {
-                return new DataverseResponse<>("", new ObjectMapper(), DatasetVersion.class) {
-
-                    @Override
-                    public DatasetVersion getData() {
-                        return dv;
-                    }
-                };
+            public DataverseHttpResponse<DatasetVersion> getVersion() throws IOException {
+                return mockDataverseHttpResponse(dv);
             }
         };
         Mockito.doReturn(datasetApi)
             .when(dataverse).dataset(Mockito.any(String.class));
+    }
+
+    private <D> DataverseHttpResponse<D> mockDataverseHttpResponse(D data) throws IOException {
+        BasicHttpResponse basicHttpResponse = new BasicHttpResponse(null, 200, "");
+        basicHttpResponse.setEntity(new StringEntity(""));
+        return new DataverseHttpResponse<>(basicHttpResponse, new ObjectMapper(), DatasetVersion.class) {
+
+            @Override
+            public D getData() {
+                return data;
+            }
+        };
     }
 }
