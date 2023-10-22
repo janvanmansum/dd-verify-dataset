@@ -16,8 +16,8 @@
 
 package nl.knaw.dans.verifydataset;
 
-import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.core.Configuration;
 import nl.knaw.dans.lib.util.DataverseClientFactory;
 import nl.knaw.dans.verifydataset.core.config.VerifyDatasetConfig;
 
