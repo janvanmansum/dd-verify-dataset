@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import javax.ws.rs.core.Response;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.util.List;
@@ -58,6 +59,9 @@ public class CmdiChecker {
                     else {
                         log.debug(String.format("reading %d %s", fileId, name));
                         try (var is = response.getEntity().getContent()) {
+                            // To protect from XXE attacks (XML External Entity)
+                            documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+
                             Node xmlns = documentBuilderFactory.newDocumentBuilder().parse(is)
                                 .getDocumentElement().getAttributes().getNamedItem("xmlns");
                             if (xmlns != null && xmlns.getNodeValue().toLowerCase().endsWith("//www.clarin.eu/cmd/"))
@@ -70,9 +74,9 @@ public class CmdiChecker {
                 }
             }
         }
-        if (dcmiResponse.getCmdiFiles().size() > 0)
+        if (!dcmiResponse.getCmdiFiles().isEmpty())
             dcmiResponse.setStatus("yes");
-        else if (dcmiResponse.getErrorMessages().size() == 0)
+        else if (dcmiResponse.getErrorMessages().isEmpty())
             dcmiResponse.setStatus("no");
         else
             dcmiResponse.setStatus("unknown");
