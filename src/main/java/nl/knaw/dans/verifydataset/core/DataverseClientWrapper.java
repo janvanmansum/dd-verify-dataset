@@ -18,7 +18,7 @@ package nl.knaw.dans.verifydataset.core;
 import nl.knaw.dans.lib.dataverse.DataverseClient;
 import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
-import org.apache.http.HttpResponse;
+import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,7 +36,8 @@ public class DataverseClientWrapper {
             .getFiles();
     }
 
-    protected HttpResponse getFile(int fileId) throws DataverseException, IOException {
-        return dataverseClient.basicFileAccess(fileId).getFile();
+    protected String getFile(int fileId) throws DataverseException, IOException {
+        BasicHttpClientResponseHandler handler = new BasicHttpClientResponseHandler();
+        return dataverseClient.basicFileAccess(fileId).getFile(handler);
     }
 }

@@ -25,6 +25,7 @@ import org.w3c.dom.Node;
 import javax.ws.rs.core.Response;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -52,22 +53,14 @@ public class CmdiChecker {
             if (extensions.contains(extension) || contentType.toLowerCase().endsWith("xml")) {
                 try {
                     log.debug(String.format("requesting %d %s", fileId, name));
-                    var response = dataverse.getFile(fileId);
-                    if (response.getStatusLine().getStatusCode() != Response.Status.OK.getStatusCode()) {
-                        dcmiResponse.getErrorMessages().add(msgIntro(fileId, name) + response.getStatusLine().getReasonPhrase());
-                    }
-                    else {
-                        log.debug(String.format("reading %d %s", fileId, name));
-                        try (var is = response.getEntity().getContent()) {
-                            // To protect from XXE attacks (XML External Entity)
-                            documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                    var is = dataverse.getFile(fileId);
+                    // To protect from XXE attacks (XML External Entity)
+                    documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
 
-                            Node xmlns = documentBuilderFactory.newDocumentBuilder().parse(is)
-                                .getDocumentElement().getAttributes().getNamedItem("xmlns");
-                            if (xmlns != null && xmlns.getNodeValue().toLowerCase().endsWith("//www.clarin.eu/cmd/"))
-                                dcmiResponse.getCmdiFiles().add(fileName(fileMeta));
-                        }
-                    }
+                    Node xmlns = documentBuilderFactory.newDocumentBuilder().parse(new ByteArrayInputStream(is.getBytes()))
+                        .getDocumentElement().getAttributes().getNamedItem("xmlns");
+                    if (xmlns != null && xmlns.getNodeValue().toLowerCase().endsWith("//www.clarin.eu/cmd/"))
+                        dcmiResponse.getCmdiFiles().add(fileName(fileMeta));
                 }
                 catch (Exception e) {
                     dcmiResponse.getErrorMessages().add(msgIntro(fileId, name) + e);

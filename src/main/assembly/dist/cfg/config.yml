@@ -17,6 +17,11 @@ dataverse:
   unblockKey: 'changeme'
   awaitLockStateMaxNumberOfRetries: 30
   awaitLockStateMillisecondsBetweenRetries: 500
+  httpClient:
+    timeout: 30s
+    connectionTimeout: 15s
+    timeToLive: 1h
+    retries: 2
 
 verifyDataset:
   identifierHasValidMod11:
